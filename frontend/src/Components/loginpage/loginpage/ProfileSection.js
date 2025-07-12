@@ -6,11 +6,13 @@ function ProfileSection() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
+  const API_BASE = process.env.REACT_APP_API_URL;
+  const token = localStorage.getItem('token');
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const res = await fetch('/api/profile', {
+        const res = await fetch(`${API_BASE}/api/profile`, {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
@@ -29,7 +31,7 @@ function ProfileSection() {
     };
 
     fetchProfile();
-  }, []);
+  }, [API_BASE, token]);
 
   const handleChange = (e) => {
     setProfile({ ...profile, [e.target.name]: e.target.value });
@@ -37,8 +39,7 @@ function ProfileSection() {
 
   const handleSave = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('/api/profile', {
+      const res = await fetch(`${API_BASE}/api/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
