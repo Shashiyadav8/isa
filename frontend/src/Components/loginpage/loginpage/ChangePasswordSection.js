@@ -12,7 +12,7 @@ const ChangePasswordSection = () => {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
-  const API_BASE = process.env.REACT_APP_API_BASE_URL;
+  const API_BASE = process.env.REACT_APP_API_URL;
 
   const toggleForm = () => setShowForm(!showForm);
 
@@ -21,7 +21,7 @@ const ChangePasswordSection = () => {
     setMessage('');
     setError('');
     try {
-      const res = await fetch(`${API_BASE}/auth/request-otp`, {
+      const res = await fetch(`${API_BASE}/api/auth/request-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
@@ -40,13 +40,14 @@ const ChangePasswordSection = () => {
     e.preventDefault();
     setMessage('');
     setError('');
+
     if (newPassword !== confirmPassword) {
       setError("Passwords don't match");
       return;
     }
 
     try {
-      const res = await fetch(`${API_BASE}/auth/verify-otp-change-password`, {
+      const res = await fetch(`${API_BASE}/api/auth/verify-otp-change-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, otp, newPassword }),
