@@ -20,15 +20,15 @@ const AnalyticsSection = () => {
   const [selectedEmployee, setSelectedEmployee] = useState('');
 
   const token = localStorage.getItem('token');
-  const API_BASE = process.env.REACT_APP_API_BASE_URL;
+  const API_BASE = process.env.REACT_APP_API_URL;
 
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
-        const res = await fetch(`${API_BASE}/admin/analytics`, {
+        const res = await fetch(`${API_BASE}/api/admin/analytics`, {
           headers: {
-            Authorization: `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         });
 
         if (!res.ok) throw new Error('Failed to fetch analytics');
@@ -50,7 +50,7 @@ const AnalyticsSection = () => {
     if (!value) {
       setFilteredStats(analytics.employeeStats);
     } else {
-      const filtered = analytics.employeeStats.filter(emp =>
+      const filtered = analytics.employeeStats.filter((emp) =>
         emp.name.toLowerCase().includes(value.toLowerCase())
       );
       setFilteredStats(filtered);
@@ -60,26 +60,28 @@ const AnalyticsSection = () => {
   if (!analytics) return <p>Loading analytics...</p>;
 
   const chartData = {
-    labels: filteredStats.map(emp => emp.name),
+    labels: filteredStats.map((emp) => emp.name),
     datasets: [
       {
         label: 'Avg Hours',
-        data: filteredStats.map(emp => Number(emp.avg_hours || 0).toFixed(2)),
+        data: filteredStats.map((emp) =>
+          Number(emp.avg_hours || 0).toFixed(2)
+        ),
         backgroundColor: '#007bff',
       },
       {
         label: 'Leaves',
-        data: filteredStats.map(emp => emp.total_leaves || 0),
+        data: filteredStats.map((emp) => emp.total_leaves || 0),
         backgroundColor: '#dc3545',
       },
       {
         label: 'Tasks',
-        data: filteredStats.map(emp => emp.total_tasks || 0),
+        data: filteredStats.map((emp) => emp.total_tasks || 0),
         backgroundColor: '#ffc107',
       },
       {
         label: 'Completed Tasks',
-        data: filteredStats.map(emp => emp.completed_tasks || 0),
+        data: filteredStats.map((emp) => emp.completed_tasks || 0),
         backgroundColor: '#28a745',
       },
     ],
@@ -90,12 +92,15 @@ const AnalyticsSection = () => {
     maintainAspectRatio: false,
     plugins: {
       legend: { position: 'top' },
-      title: { display: true, text: 'Employee Analytics Overview' },
+      title: {
+        display: true,
+        text: 'Employee Analytics Overview',
+      },
     },
     scales: {
       y: {
         beginAtZero: true,
-        ticks: { stepSize: 1 }
+        ticks: { stepSize: 1 },
       },
     },
   };
