@@ -1,5 +1,5 @@
+// src/Components/EmployeeDashboard.js
 import React, { useEffect, useState, useCallback } from 'react';
-import axios from './axiosInstance';
 import './EmployeeDashboard.css';
 import { useNavigate } from 'react-router-dom';
 import LeaveSection from './LeaveSection';
@@ -29,14 +29,17 @@ function EmployeeDashboard() {
 
   const fetchStatus = useCallback(async () => {
     try {
-      const res = await axios.get('/attendance/status');
-      setStatus(res.data);
+      const res = await fetch('/api/attendance/status', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      setStatus(data);
       setError('');
     } catch (err) {
       console.error('Status fetch failed:', err);
       setError('Unable to fetch status. Please login again.');
     }
-  }, []);
+  }, [token]);
 
   const verifyIPs = useCallback(async () => {
     if (!user) return;
@@ -45,24 +48,27 @@ function EmployeeDashboard() {
       ip.replace('::ffff:', '').replace('::1', '127.0.0.1').trim();
 
     try {
-      const ipRes = await axios.get('/ip/client-ip');
-      const clientIP = normalizeIP(ipRes.data.ip || '');
+      const ipRes = await fetch('/api/ip/client-ip', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const ipData = await ipRes.json();
+      const clientIP = normalizeIP(ipData.ip || '');
       setIp(clientIP);
 
-      const wifiRes = await axios.get('/ip/wifi-ips');
-      const allowedWifi = wifiRes.data.map(normalizeIP);
-      setWifiAllowed(allowedWifi.includes(clientIP));
+      const wifiRes = await fetch('/api/ip/wifi-ips');
+      const wifiData = await wifiRes.json();
+      setWifiAllowed(wifiData.map(normalizeIP).includes(clientIP));
 
-      const deviceRes = await axios.get(`/ip/device-ips/${user.id}`);
-      const allowedDevices = deviceRes.data.map(normalizeIP);
-      setDeviceAllowed(allowedDevices.includes(clientIP));
+      const deviceRes = await fetch(`/api/ip/device-ips/${user.id}`);
+      const deviceData = await deviceRes.json();
+      setDeviceAllowed(deviceData.map(normalizeIP).includes(clientIP));
     } catch (err) {
       console.error('❌ IP verification failed:', err);
       setIp('Error fetching IP');
       setWifiAllowed(false);
       setDeviceAllowed(false);
     }
-  }, [user]);
+  }, [token, user]);
 
   useEffect(() => {
     fetchStatus();
@@ -109,11 +115,11 @@ function EmployeeDashboard() {
 
   const handleDownloadAttendance = async () => {
     try {
-      const res = await axios.get('/attendance/export', {
-        responseType: 'blob',
+      const res = await fetch('/api/attendance/export', {
+        headers: { Authorization: `Bearer ${token}` }
       });
-
-      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
       link.setAttribute('download', 'attendance.csv');
@@ -128,11 +134,11 @@ function EmployeeDashboard() {
 
   const handleDownloadLeaves = async () => {
     try {
-      const res = await axios.get('/leaves/export', {
-        responseType: 'blob',
+      const res = await fetch('/api/leaves/export', {
+        headers: { Authorization: `Bearer ${token}` }
       });
-
-      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
       link.setAttribute('download', 'leaves.csv');
@@ -172,16 +178,18 @@ function EmployeeDashboard() {
     if (isPunchIn) formData.append('photo', photo);
 
     try {
-      const res = await axios.post('/attendance/punch', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+      const res = await fetch('/api/attendance/punch', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData
       });
-
-      alert(res.data.message);
+      const data = await res.json();
+      alert(data.message);
       fetchStatus();
       if (isPunchIn) setPhoto(null);
     } catch (err) {
       console.error('Punch error:', err);
-      alert(err.response?.data?.message || 'Punch failed');
+      alert('Punch failed');
     }
   };
 
