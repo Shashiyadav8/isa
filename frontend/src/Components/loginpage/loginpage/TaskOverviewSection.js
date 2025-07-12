@@ -11,10 +11,11 @@ const TaskOverviewSection = () => {
   });
 
   const token = localStorage.getItem('token');
+  const API_BASE = process.env.REACT_APP_API_URL;
 
   const fetchOverview = useCallback(async () => {
     try {
-      const res = await fetch('/api/tasks/overview', {
+      const res = await fetch(`${API_BASE}/api/tasks/overview`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -26,11 +27,11 @@ const TaskOverviewSection = () => {
     } catch (err) {
       console.error('Failed to fetch task overview:', err);
     }
-  }, [token]);
+  }, [API_BASE, token]);
 
   const fetchEmployees = useCallback(async () => {
     try {
-      const res = await fetch('/api/employees', {
+      const res = await fetch(`${API_BASE}/api/employees`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -42,7 +43,7 @@ const TaskOverviewSection = () => {
     } catch (err) {
       console.error('Failed to fetch employees:', err);
     }
-  }, [token]);
+  }, [API_BASE, token]);
 
   useEffect(() => {
     fetchOverview();
@@ -58,7 +59,7 @@ const TaskOverviewSection = () => {
     }
 
     try {
-      const res = await fetch('/api/tasks/assign', {
+      const res = await fetch(`${API_BASE}/api/tasks/assign`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
