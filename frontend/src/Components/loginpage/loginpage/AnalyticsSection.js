@@ -1,6 +1,5 @@
 // src/Components/admin/AnalyticsSection.js
 import React, { useEffect, useState } from 'react';
-import axios from './axiosInstance';
 import './AnalyticsSection.css';
 import { Bar } from 'react-chartjs-2';
 import {
@@ -20,18 +19,29 @@ const AnalyticsSection = () => {
   const [filteredStats, setFilteredStats] = useState([]);
   const [selectedEmployee, setSelectedEmployee] = useState('');
 
+  const token = localStorage.getItem('token');
+  const API_BASE = process.env.REACT_APP_API_BASE_URL;
+
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
-        const res = await axios.get('/admin/analytics'); // Base URL already set in axiosInstance
-        setAnalytics(res.data);
-        setFilteredStats(res.data.employeeStats || []);
+        const res = await fetch(`${API_BASE}/admin/analytics`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        if (!res.ok) throw new Error('Failed to fetch analytics');
+        const data = await res.json();
+        setAnalytics(data);
+        setFilteredStats(data.employeeStats || []);
       } catch (err) {
-        console.error('Failed to fetch analytics', err.response || err);
+        console.error('Failed to fetch analytics', err);
       }
     };
+
     fetchAnalytics();
-  }, []);
+  }, [API_BASE, token]);
 
   const handleFilterChange = (e) => {
     const value = e.target.value;
