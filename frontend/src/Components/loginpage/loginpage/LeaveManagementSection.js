@@ -1,6 +1,5 @@
 // components/admin/LeaveManagementSection.js
 import React, { useEffect, useState, useCallback } from 'react';
-import axios from './axiosInstance';
 import './LeaveManagementSection.css';
 
 function LeaveManagementSection() {
@@ -10,8 +9,10 @@ function LeaveManagementSection() {
 
   const fetchLeaves = useCallback(async () => {
     try {
-      const res = await axios.get('/leaves/admin'); // ✅ updated
-      setLeaves(res.data);
+      const res = await fetch('/api/leaves/admin'); // Update base path as needed
+      if (!res.ok) throw new Error('Failed to fetch leaves');
+      const data = await res.json();
+      setLeaves(data);
     } catch (err) {
       console.error('Failed to fetch leaves', err);
     }
@@ -23,7 +24,10 @@ function LeaveManagementSection() {
 
   const handleApprove = async (id) => {
     try {
-      await axios.put(`/leaves/${id}/approve`); // ✅ updated
+      const res = await fetch(`/api/leaves/${id}/approve`, {
+        method: 'PUT',
+      });
+      if (!res.ok) throw new Error('Approve failed');
       fetchLeaves();
     } catch (err) {
       console.error('Approve failed', err);
@@ -32,7 +36,10 @@ function LeaveManagementSection() {
 
   const handleReject = async (id) => {
     try {
-      await axios.put(`/leaves/${id}/reject`); // ✅ updated
+      const res = await fetch(`/api/leaves/${id}/reject`, {
+        method: 'PUT',
+      });
+      if (!res.ok) throw new Error('Reject failed');
       fetchLeaves();
     } catch (err) {
       console.error('Reject failed', err);
