@@ -1,4 +1,3 @@
-// src/Components/ProductivityChart.js
 import React, { useEffect, useState } from 'react';
 import { Bar } from 'react-chartjs-2';
 import {
@@ -22,13 +21,15 @@ const ProductivityChart = () => {
     leavesTaken: 0,
   });
 
+  const API_BASE = process.env.REACT_APP_API_URL;
+  const token = localStorage.getItem('token');
+
   useEffect(() => {
     const fetchProductivity = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const res = await fetch('/api/employees/productivity', {
+        const res = await fetch(`${API_BASE}/api/employees/productivity`, {
           headers: {
-            'Authorization': `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
         });
 
@@ -44,7 +45,7 @@ const ProductivityChart = () => {
     };
 
     fetchProductivity();
-  }, []);
+  }, [API_BASE, token]);
 
   const chartData = {
     labels: ['Tasks Completed', 'Hours Worked', 'Leaves Taken'],
