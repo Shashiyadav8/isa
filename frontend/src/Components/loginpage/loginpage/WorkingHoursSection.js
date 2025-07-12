@@ -5,20 +5,29 @@ const WorkingHoursSection = () => {
   const [month, setMonth] = useState('');
   const [summary, setSummary] = useState([]);
   const [totalHours, setTotalHours] = useState(0);
-  const token = localStorage.getItem('token');
 
   useEffect(() => {
     const fetchSummary = async () => {
       if (!month) return;
 
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.warn('No token found');
+        return;
+      }
+
       try {
-        const res = await fetch(`/api/attendance/summary?month=${month}`, {
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/api/attendance/summary?month=${month}`, {
+          method: 'GET',
           headers: {
-            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
           },
         });
 
-        if (!res.ok) throw new Error('Failed to fetch summary');
+        if (!res.ok) {
+          throw new Error('Failed to fetch summary');
+        }
 
         const data = await res.json();
         setSummary(data.summary);
@@ -29,7 +38,7 @@ const WorkingHoursSection = () => {
     };
 
     fetchSummary();
-  }, [month, token]);
+  }, [month]);
 
   return (
     <div className="working-hours-section">
