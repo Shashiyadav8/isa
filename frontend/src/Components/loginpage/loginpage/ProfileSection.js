@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import axios from './axiosInstance';
 import './ProfileSection.css'; // Ensure CSS is correctly linked
 
 function ProfileSection() {
@@ -10,13 +9,25 @@ function ProfileSection() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await axios.get('/profile'); // ✅ using axiosInstance with auto token
-        setProfile(res.data);
+        const token = localStorage.getItem('token');
+        const res = await fetch('/api/profile', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) {
+          throw new Error('Failed to fetch profile');
+        }
+
+        const data = await res.json();
+        setProfile(data);
       } catch (err) {
         setError('❌ Failed to load profile. Please log in again.');
         console.error('Profile fetch error:', err);
       }
     };
+
     fetchProfile();
   }, []);
 
@@ -26,10 +37,23 @@ function ProfileSection() {
 
   const handleSave = async () => {
     try {
-      await axios.put('/profile', {
-        name: profile.name,
-        phone: profile.phone,
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: profile.name,
+          phone: profile.phone,
+        }),
       });
+
+      if (!res.ok) {
+        throw new Error('Failed to update profile');
+      }
+
       setMessage('✅ Profile updated successfully!');
       setError('');
     } catch (err) {
