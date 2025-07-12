@@ -8,10 +8,11 @@ const TaskSection = () => {
   const [employeeId, setEmployeeId] = useState('');
 
   const token = localStorage.getItem('token');
+  const API_BASE = process.env.REACT_APP_API_URL;
 
   const fetchTasks = useCallback(async () => {
     try {
-      const res = await fetch('/api/tasks', {
+      const res = await fetch(`${API_BASE}/api/tasks`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -23,12 +24,12 @@ const TaskSection = () => {
     } catch (err) {
       console.error('Error fetching tasks:', err);
     }
-  }, [token]);
+  }, [API_BASE, token]);
 
   useEffect(() => {
     const fetchProfileAndTasks = async () => {
       try {
-        const res = await fetch('/api/profile', {
+        const res = await fetch(`${API_BASE}/api/profile`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -45,7 +46,7 @@ const TaskSection = () => {
     };
 
     fetchProfileAndTasks();
-  }, [fetchTasks, token]);
+  }, [fetchTasks, API_BASE, token]);
 
   const handleAddTask = async (e) => {
     e.preventDefault();
@@ -55,7 +56,7 @@ const TaskSection = () => {
     }
 
     try {
-      const res = await fetch('/api/tasks', {
+      const res = await fetch(`${API_BASE}/api/tasks`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -79,7 +80,7 @@ const TaskSection = () => {
 
   const handleStatusChange = async (id, status) => {
     try {
-      const res = await fetch(`/api/tasks/${id}`, {
+      const res = await fetch(`${API_BASE}/api/tasks/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
