@@ -13,7 +13,7 @@ function EmployeeCorrectionRequest({ token }) {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const API_BASE = process.env.REACT_APP_API_BASE_URL;
+  const API_BASE = process.env.REACT_APP_API_URL;
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -59,7 +59,7 @@ function EmployeeCorrectionRequest({ token }) {
 
     try {
       setLoading(true);
-      const res = await fetch(`${API_BASE}/corrections`, {
+      const res = await fetch(`${API_BASE}/api/corrections`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
