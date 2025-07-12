@@ -1,4 +1,3 @@
-// src/Components/LeaveSection.js
 import React, { useEffect, useState } from 'react';
 import './LeaveSection.css';
 
@@ -11,6 +10,9 @@ const LeaveSection = () => {
   const [error, setError] = useState('');
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
 
+  const API_BASE = process.env.REACT_APP_API_URL;
+  const token = localStorage.getItem('token');
+
   useEffect(() => {
     const handleResize = () => setIsDesktop(window.innerWidth >= 768);
     window.addEventListener('resize', handleResize);
@@ -19,7 +21,11 @@ const LeaveSection = () => {
 
   const fetchLeaves = async () => {
     try {
-      const res = await fetch('/api/leaves');
+      const res = await fetch(`${API_BASE}/api/leaves`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       if (!res.ok) throw new Error('Failed to fetch leaves');
       const data = await res.json();
       setLeaves(data);
@@ -35,9 +41,12 @@ const LeaveSection = () => {
   const handleApply = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('/api/leaves', {
+      const res = await fetch(`${API_BASE}/api/leaves`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify(form),
       });
       if (!res.ok) {
@@ -56,8 +65,11 @@ const LeaveSection = () => {
 
   const handleCancel = async (id) => {
     try {
-      const res = await fetch(`/api/leaves/${id}`, {
+      const res = await fetch(`${API_BASE}/api/leaves/${id}`, {
         method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
       if (!res.ok) {
         const errorData = await res.json();
