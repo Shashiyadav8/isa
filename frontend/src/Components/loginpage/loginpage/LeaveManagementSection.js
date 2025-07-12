@@ -1,4 +1,3 @@
-// components/admin/LeaveManagementSection.js
 import React, { useEffect, useState, useCallback } from 'react';
 import './LeaveManagementSection.css';
 
@@ -7,16 +6,23 @@ function LeaveManagementSection() {
   const [filter, setFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
 
+  const API_BASE = process.env.REACT_APP_API_URL;
+  const token = localStorage.getItem('token');
+
   const fetchLeaves = useCallback(async () => {
     try {
-      const res = await fetch('/api/leaves/admin'); // Update base path as needed
+      const res = await fetch(`${API_BASE}/api/leaves/admin`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       if (!res.ok) throw new Error('Failed to fetch leaves');
       const data = await res.json();
       setLeaves(data);
     } catch (err) {
       console.error('Failed to fetch leaves', err);
     }
-  }, []);
+  }, [API_BASE, token]);
 
   useEffect(() => {
     fetchLeaves();
@@ -24,8 +30,11 @@ function LeaveManagementSection() {
 
   const handleApprove = async (id) => {
     try {
-      const res = await fetch(`/api/leaves/${id}/approve`, {
+      const res = await fetch(`${API_BASE}/api/leaves/${id}/approve`, {
         method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
       if (!res.ok) throw new Error('Approve failed');
       fetchLeaves();
@@ -36,8 +45,11 @@ function LeaveManagementSection() {
 
   const handleReject = async (id) => {
     try {
-      const res = await fetch(`/api/leaves/${id}/reject`, {
+      const res = await fetch(`${API_BASE}/api/leaves/${id}/reject`, {
         method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
       if (!res.ok) throw new Error('Reject failed');
       fetchLeaves();
