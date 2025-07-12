@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import axios from './axiosInstance';
 import './TaskSection.css';
 
 const TaskSection = () => {
@@ -8,20 +7,36 @@ const TaskSection = () => {
   const [message, setMessage] = useState('');
   const [employeeId, setEmployeeId] = useState('');
 
+  const token = localStorage.getItem('token');
+
   const fetchTasks = useCallback(async () => {
     try {
-      const res = await axios.get('/tasks');
-      setTasks(res.data);
+      const res = await fetch('/api/tasks', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) throw new Error('Failed to fetch tasks');
+      const data = await res.json();
+      setTasks(data);
     } catch (err) {
       console.error('Error fetching tasks:', err);
     }
-  }, []);
+  }, [token]);
 
   useEffect(() => {
     const fetchProfileAndTasks = async () => {
       try {
-        const res = await axios.get('/profile');
-        setEmployeeId(res.data.employee_id);
+        const res = await fetch('/api/profile', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) throw new Error('Failed to fetch profile');
+        const profile = await res.json();
+        setEmployeeId(profile.employee_id);
       } catch (err) {
         console.error('Failed to load profile', err);
       }
@@ -30,7 +45,7 @@ const TaskSection = () => {
     };
 
     fetchProfileAndTasks();
-  }, [fetchTasks]);
+  }, [fetchTasks, token]);
 
   const handleAddTask = async (e) => {
     e.preventDefault();
@@ -40,10 +55,19 @@ const TaskSection = () => {
     }
 
     try {
-      await axios.post('/tasks', {
-        ...newTask,
-        employee_id: employeeId,
+      const res = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          ...newTask,
+          employee_id: employeeId,
+        }),
       });
+
+      if (!res.ok) throw new Error('Failed to add task');
       setMessage('✅ Task added successfully');
       setNewTask({ title: '', description: '' });
       fetchTasks();
@@ -55,7 +79,16 @@ const TaskSection = () => {
 
   const handleStatusChange = async (id, status) => {
     try {
-      await axios.put(`/tasks/${id}`, { status });
+      const res = await fetch(`/api/tasks/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status }),
+      });
+
+      if (!res.ok) throw new Error('Failed to update task');
       fetchTasks();
     } catch (err) {
       console.error('Update task error:', err);
