@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import axios from './axiosInstance';
 import './AdminSettingsSection.css';
 
 const AdminSettingsSection = () => {
@@ -8,32 +7,42 @@ const AdminSettingsSection = () => {
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
 
+  const token = localStorage.getItem('token');
+  const API_BASE = process.env.REACT_APP_API_BASE_URL;
+
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const res = await axios.get('/admin/settings');
+        const res = await fetch(`${API_BASE}/admin/settings`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        if (!res.ok) throw new Error('Failed to fetch settings');
+        const data = await res.json();
 
         setAllowedIps(
-          Array.isArray(res.data.allowed_ips)
-            ? res.data.allowed_ips.join(',')
-            : res.data.allowed_ips || ''
+          Array.isArray(data.allowed_ips)
+            ? data.allowed_ips.join(',')
+            : data.allowed_ips || ''
         );
 
         setAllowedDevices(
-          Array.isArray(res.data.allowed_devices)
-            ? res.data.allowed_devices.join(',')
-            : res.data.allowed_devices || ''
+          Array.isArray(data.allowed_devices)
+            ? data.allowed_devices.join(',')
+            : data.allowed_devices || ''
         );
 
-        setStartTime(res.data.working_hours_start || '');
-        setEndTime(res.data.working_hours_end || '');
+        setStartTime(data.working_hours_start || '');
+        setEndTime(data.working_hours_end || '');
       } catch (err) {
         console.error('Error fetching admin settings:', err);
       }
     };
 
     fetchSettings();
-  }, []);
+  }, [API_BASE, token]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -48,13 +57,21 @@ const AdminSettingsSection = () => {
         .map(ip => ip.trim())
         .filter(Boolean);
 
-      await axios.put('/admin/settings', {
-        allowed_ips: formattedIps,
-        allowed_devices: formattedDevices,
-        working_start: startTime,
-        working_end: endTime
+      const res = await fetch(`${API_BASE}/admin/settings`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          allowed_ips: formattedIps,
+          allowed_devices: formattedDevices,
+          working_start: startTime,
+          working_end: endTime
+        })
       });
 
+      if (!res.ok) throw new Error('Failed to update settings');
       alert('✅ Settings updated successfully');
     } catch (err) {
       console.error('Error updating settings:', err);
