@@ -1,5 +1,6 @@
+// src/Components/AdminCorrectionPanel.js
 import React, { useEffect, useState, useCallback } from 'react';
-import './AdminDashboard.css';
+import './AdminDashboard.css'; // or use separate correction CSS if available
 
 function AdminCorrectionPanel({ token }) {
   const [requests, setRequests] = useState([]);
@@ -7,11 +8,11 @@ function AdminCorrectionPanel({ token }) {
   const [filter, setFilter] = useState('');
   const [modalData, setModalData] = useState(null);
 
-  const API_BASE = process.env.REACT_APP_API_BASE_URL;
+  const API_BASE = process.env.REACT_APP_API_URL;
 
   const fetchRequests = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE}/corrections`, {
+      const res = await fetch(`${API_BASE}/api/corrections`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -55,7 +56,7 @@ function AdminCorrectionPanel({ token }) {
     const { id, actionType, admin_comment } = modalData;
 
     try {
-      const res = await fetch(`${API_BASE}/corrections/${id}`, {
+      const res = await fetch(`${API_BASE}/api/corrections/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
