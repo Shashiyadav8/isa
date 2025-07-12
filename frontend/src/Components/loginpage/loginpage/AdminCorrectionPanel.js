@@ -1,22 +1,29 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import axios from './axiosInstance';
 import './AdminDashboard.css';
+
 function AdminCorrectionPanel({ token }) {
   const [requests, setRequests] = useState([]);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('');
   const [modalData, setModalData] = useState(null);
 
+  const API_BASE = process.env.REACT_APP_API_BASE_URL;
+
   const fetchRequests = useCallback(async () => {
     try {
-      const res = await axios.get('/corrections', {
-        headers: { Authorization: `Bearer ${token}` }
+      const res = await fetch(`${API_BASE}/corrections`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       });
-      setRequests(res.data);
+
+      if (!res.ok) throw new Error('Failed to fetch corrections');
+      const data = await res.json();
+      setRequests(data);
     } catch (err) {
       console.error('❌ Failed to fetch corrections:', err);
     }
-  }, [token]);
+  }, [token, API_BASE]);
 
   useEffect(() => {
     fetchRequests();
@@ -48,12 +55,19 @@ function AdminCorrectionPanel({ token }) {
     const { id, actionType, admin_comment } = modalData;
 
     try {
-      await axios.put(`/corrections/${id}`, {
-        status: actionType,
-        admin_comment,
-      }, {
-        headers: { Authorization: `Bearer ${token}` },
+      const res = await fetch(`${API_BASE}/corrections/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          status: actionType,
+          admin_comment
+        })
       });
+
+      if (!res.ok) throw new Error('Failed to update correction');
       setModalData(null);
       fetchRequests();
     } catch (err) {
