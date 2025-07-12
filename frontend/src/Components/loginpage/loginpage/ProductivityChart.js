@@ -1,6 +1,5 @@
 // src/Components/ProductivityChart.js
 import React, { useEffect, useState } from 'react';
-import axios from './axiosInstance';
 import { Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -26,8 +25,19 @@ const ProductivityChart = () => {
   useEffect(() => {
     const fetchProductivity = async () => {
       try {
-        const res = await axios.get('/employees/productivity'); // ✅ updated to use axiosInstance
-        setData(res.data);
+        const token = localStorage.getItem('token');
+        const res = await fetch('/api/employees/productivity', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) {
+          throw new Error('Failed to fetch productivity data');
+        }
+
+        const result = await res.json();
+        setData(result);
       } catch (err) {
         console.error('❌ Failed to fetch productivity data:', err);
       }
