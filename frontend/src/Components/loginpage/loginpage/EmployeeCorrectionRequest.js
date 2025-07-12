@@ -1,6 +1,5 @@
 // src/Components/EmployeeCorrectionRequest.js
 import React, { useState } from 'react';
-import axios from './axiosInstance';
 import './EmployeeCorrectionRequest.css';
 
 function EmployeeCorrectionRequest({ token }) {
@@ -13,6 +12,8 @@ function EmployeeCorrectionRequest({ token }) {
 
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const API_BASE = process.env.REACT_APP_API_BASE_URL;
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -58,9 +59,18 @@ function EmployeeCorrectionRequest({ token }) {
 
     try {
       setLoading(true);
-      await axios.post('/corrections', payload, {
-        headers: { Authorization: `Bearer ${token}` }
+      const res = await fetch(`${API_BASE}/corrections`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
       });
+
+      if (!res.ok) {
+        throw new Error('Submission failed');
+      }
 
       setMessage('✅ Correction request submitted successfully!');
       setForm({
