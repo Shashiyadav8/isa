@@ -12,6 +12,8 @@ import EmployeeCorrectionRequest from './EmployeeCorrectionRequest';
 function EmployeeDashboard() {
   const token = localStorage.getItem('token');
   const user = JSON.parse(localStorage.getItem('user'));
+  const API_BASE = process.env.REACT_APP_API_URL;
+
   const [status, setStatus] = useState({ punch_in: null, punch_out: null });
   const [clock, setClock] = useState(new Date());
   const [error, setError] = useState('');
@@ -29,8 +31,8 @@ function EmployeeDashboard() {
 
   const fetchStatus = useCallback(async () => {
     try {
-      const res = await fetch('/api/attendance/status', {
-        headers: { Authorization: `Bearer ${token}` }
+      const res = await fetch(`${API_BASE}/api/attendance/status`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
       setStatus(data);
@@ -39,7 +41,7 @@ function EmployeeDashboard() {
       console.error('Status fetch failed:', err);
       setError('Unable to fetch status. Please login again.');
     }
-  }, [token]);
+  }, [API_BASE, token]);
 
   const verifyIPs = useCallback(async () => {
     if (!user) return;
@@ -48,18 +50,18 @@ function EmployeeDashboard() {
       ip.replace('::ffff:', '').replace('::1', '127.0.0.1').trim();
 
     try {
-      const ipRes = await fetch('/api/ip/client-ip', {
-        headers: { Authorization: `Bearer ${token}` }
+      const ipRes = await fetch(`${API_BASE}/api/ip/client-ip`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
       const ipData = await ipRes.json();
       const clientIP = normalizeIP(ipData.ip || '');
       setIp(clientIP);
 
-      const wifiRes = await fetch('/api/ip/wifi-ips');
+      const wifiRes = await fetch(`${API_BASE}/api/ip/wifi-ips`);
       const wifiData = await wifiRes.json();
       setWifiAllowed(wifiData.map(normalizeIP).includes(clientIP));
 
-      const deviceRes = await fetch(`/api/ip/device-ips/${user.id}`);
+      const deviceRes = await fetch(`${API_BASE}/api/ip/device-ips/${user.id}`);
       const deviceData = await deviceRes.json();
       setDeviceAllowed(deviceData.map(normalizeIP).includes(clientIP));
     } catch (err) {
@@ -68,7 +70,7 @@ function EmployeeDashboard() {
       setWifiAllowed(false);
       setDeviceAllowed(false);
     }
-  }, [token, user]);
+  }, [API_BASE, token, user]);
 
   useEffect(() => {
     fetchStatus();
@@ -115,8 +117,8 @@ function EmployeeDashboard() {
 
   const handleDownloadAttendance = async () => {
     try {
-      const res = await fetch('/api/attendance/export', {
-        headers: { Authorization: `Bearer ${token}` }
+      const res = await fetch(`${API_BASE}/api/attendance/export`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
@@ -134,8 +136,8 @@ function EmployeeDashboard() {
 
   const handleDownloadLeaves = async () => {
     try {
-      const res = await fetch('/api/leaves/export', {
-        headers: { Authorization: `Bearer ${token}` }
+      const res = await fetch(`${API_BASE}/api/leaves/export`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
@@ -178,10 +180,10 @@ function EmployeeDashboard() {
     if (isPunchIn) formData.append('photo', photo);
 
     try {
-      const res = await fetch('/api/attendance/punch', {
+      const res = await fetch(`${API_BASE}/api/attendance/punch`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
-        body: formData
+        body: formData,
       });
       const data = await res.json();
       alert(data.message);
