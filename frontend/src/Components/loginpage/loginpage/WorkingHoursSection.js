@@ -1,26 +1,35 @@
 import React, { useEffect, useState } from 'react';
-import axios from './axiosInstance';
 import './WorkingHoursSection.css';
 
 const WorkingHoursSection = () => {
   const [month, setMonth] = useState('');
   const [summary, setSummary] = useState([]);
   const [totalHours, setTotalHours] = useState(0);
+  const token = localStorage.getItem('token');
 
   useEffect(() => {
     const fetchSummary = async () => {
       if (!month) return;
+
       try {
-        const res = await axios.get(`/attendance/summary?month=${month}`);
-        setSummary(res.data.summary);
-        setTotalHours(res.data.totalHours);
+        const res = await fetch(`/api/attendance/summary?month=${month}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) throw new Error('Failed to fetch summary');
+
+        const data = await res.json();
+        setSummary(data.summary);
+        setTotalHours(data.totalHours);
       } catch (err) {
         console.error('Failed to fetch summary:', err);
       }
     };
 
     fetchSummary();
-  }, [month]);
+  }, [month, token]);
 
   return (
     <div className="working-hours-section">
