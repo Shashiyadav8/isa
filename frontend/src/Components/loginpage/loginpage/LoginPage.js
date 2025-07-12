@@ -1,4 +1,3 @@
-// src/Components/LoginPage.js
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './LoginPage.css';
@@ -10,10 +9,12 @@ function LoginPage() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  const API_BASE = process.env.REACT_APP_API_URL;
+
   const handleLogin = async () => {
     setError('');
     try {
-      const response = await fetch('https://ems-backend-e76e.onrender.com/api/auth/login', {
+      const response = await fetch(`${API_BASE}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
