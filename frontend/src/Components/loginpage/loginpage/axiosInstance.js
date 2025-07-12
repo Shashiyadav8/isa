@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const axiosInstance = axios.create({
-  baseURL: 'https://ems-backend-e76e.onrender.com/api', // change in production
+  baseURL:process.env.REACT_APP_API_BASE_URL, // change in production
 });
 
 // Request Interceptor
