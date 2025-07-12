@@ -7,11 +7,19 @@ const EmployeeProfileViewer = () => {
   const [filteredProfiles, setFilteredProfiles] = useState([]);
   const [search, setSearch] = useState('');
 
+  const API_BASE = process.env.REACT_APP_API_URL;
+  const token = localStorage.getItem('token');
+
   useEffect(() => {
     const fetchProfiles = async () => {
       try {
-        const res = await fetch('/api/employees/profiles'); // Adjust base path if needed
-        if (!res.ok) throw new Error('Failed to fetch');
+        const res = await fetch(`${API_BASE}/api/employees/profiles`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) throw new Error('Failed to fetch profiles');
         const data = await res.json();
         setProfiles(data);
         setFilteredProfiles(data);
@@ -21,11 +29,11 @@ const EmployeeProfileViewer = () => {
     };
 
     fetchProfiles();
-  }, []);
+  }, [API_BASE, token]);
 
   useEffect(() => {
     const lowerSearch = search.toLowerCase();
-    const filtered = profiles.filter(emp =>
+    const filtered = profiles.filter((emp) =>
       emp.name.toLowerCase().includes(lowerSearch)
     );
     setFilteredProfiles(filtered);
@@ -49,7 +57,7 @@ const EmployeeProfileViewer = () => {
       ) : (
         <div className="profile-card-grid">
           {filteredProfiles.map((emp) => (
-            <div className="profile-card" key={emp.id}>
+            <div className="profile-card" key={emp.id || emp._id}>
               <h4>{emp.name}</h4>
               <p><strong>Email:</strong> {emp.email}</p>
               <p><strong>Phone:</strong> {emp.phone || '-'}</p>
