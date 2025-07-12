@@ -1,6 +1,5 @@
 // src/Components/ChangePasswordSection.js
 import React, { useState } from 'react';
-import axios from './axiosInstance';
 import './ChangePasswordSection.css';
 
 const ChangePasswordSection = () => {
@@ -13,6 +12,8 @@ const ChangePasswordSection = () => {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
+  const API_BASE = process.env.REACT_APP_API_BASE_URL;
+
   const toggleForm = () => setShowForm(!showForm);
 
   const handleSendOtp = async (e) => {
@@ -20,11 +21,18 @@ const ChangePasswordSection = () => {
     setMessage('');
     setError('');
     try {
-      const res = await axios.post('/auth/request-otp', { email });
+      const res = await fetch(`${API_BASE}/auth/request-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed to send OTP');
       setStep(2);
-      setMessage(res.data.message);
+      setMessage(data.message);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to send OTP');
+      setError(err.message);
     }
   };
 
@@ -38,13 +46,16 @@ const ChangePasswordSection = () => {
     }
 
     try {
-      const res = await axios.post('/auth/verify-otp-change-password', {
-        email,
-        otp,
-        newPassword,
+      const res = await fetch(`${API_BASE}/auth/verify-otp-change-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp, newPassword }),
       });
 
-      setMessage(res.data.message);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Verification failed');
+
+      setMessage(data.message);
       setStep(1);
       setEmail('');
       setOtp('');
@@ -52,7 +63,7 @@ const ChangePasswordSection = () => {
       setConfirmPassword('');
       setShowForm(false);
     } catch (err) {
-      setError(err.response?.data?.message || 'Verification failed');
+      setError(err.message);
     }
   };
 
