@@ -1,5 +1,5 @@
+// src/Components/LeaveSection.js
 import React, { useEffect, useState } from 'react';
-import axios from './axiosInstance';
 import './LeaveSection.css';
 
 const LeaveSection = () => {
@@ -19,8 +19,10 @@ const LeaveSection = () => {
 
   const fetchLeaves = async () => {
     try {
-      const res = await axios.get('/leaves'); // ✅ updated
-      setLeaves(res.data);
+      const res = await fetch('/api/leaves');
+      if (!res.ok) throw new Error('Failed to fetch leaves');
+      const data = await res.json();
+      setLeaves(data);
     } catch (err) {
       console.error('Error fetching leaves:', err);
     }
@@ -33,25 +35,39 @@ const LeaveSection = () => {
   const handleApply = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('/leaves', form); // ✅ updated
+      const res = await fetch('/api/leaves', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Leave apply failed');
+      }
       setForm({ start_date: '', end_date: '', reason: '' });
       setMessage('✅ Leave applied successfully');
       setError('');
       fetchLeaves();
     } catch (err) {
-      setError(err.response?.data?.message || '❌ Leave apply failed');
+      setError(err.message);
       setMessage('');
     }
   };
 
   const handleCancel = async (id) => {
     try {
-      await axios.delete(`/leaves/${id}`); // ✅ updated
+      const res = await fetch(`/api/leaves/${id}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Cancel failed');
+      }
       setMessage('✅ Leave cancelled successfully');
       setError('');
       fetchLeaves();
     } catch (err) {
-      setError(err.response?.data?.message || '❌ Cancel failed');
+      setError(err.message);
       setMessage('');
     }
   };
