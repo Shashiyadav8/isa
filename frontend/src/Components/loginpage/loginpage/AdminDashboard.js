@@ -1,5 +1,4 @@
 import { useEffect, useState, useCallback } from 'react';
-import axios from './axiosInstance';
 import './AdminDashboard.css';
 import { useNavigate } from 'react-router-dom';
 import LeaveManagementSection from './LeaveManagementSection';
@@ -29,28 +28,37 @@ const AdminDashboard = () => {
 
   const token = localStorage.getItem('token');
   const navigate = useNavigate();
+  const API_BASE = process.env.REACT_APP_API_BASE_URL;
 
   const fetchRecords = useCallback(async () => {
     try {
-      const res = await axios.get('/attendance/attendance-records');
-      setRecords(res.data);
-      setFiltered(res.data);
+      const res = await fetch(`${API_BASE}/attendance/attendance-records`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('Failed to fetch attendance');
+      const data = await res.json();
+      setRecords(data);
+      setFiltered(data);
       setError('');
     } catch (err) {
       console.error(err);
       setError('Failed to fetch attendance records.');
     }
-  }, []);
+  }, [token, API_BASE]);
 
   const fetchEmployees = useCallback(async () => {
     try {
-      const res = await axios.get('/employees');
-      setEmployees(res.data);
+      const res = await fetch(`${API_BASE}/employees`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('Failed to fetch employees');
+      const data = await res.json();
+      setEmployees(data);
     } catch (err) {
       console.error(err);
       setError('Failed to fetch employees.');
     }
-  }, []);
+  }, [token, API_BASE]);
 
   useEffect(() => {
     if (!token) navigate('/login');
@@ -100,7 +108,15 @@ const AdminDashboard = () => {
     }
 
     try {
-      await axios.post('/employees', newEmployee);
+      const res = await fetch(`${API_BASE}/employees`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(newEmployee)
+      });
+      if (!res.ok) throw new Error('Add employee failed');
       setNewEmployee({
         name: '',
         employee_id: '',
@@ -119,7 +135,11 @@ const AdminDashboard = () => {
 
   const handleDeleteEmployee = async (id) => {
     try {
-      await axios.delete(`/employees/${id}`);
+      const res = await fetch(`${API_BASE}/employees/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('Delete failed');
       fetchEmployees();
     } catch (err) {
       console.error(err);
@@ -139,7 +159,15 @@ const AdminDashboard = () => {
 
   const updateLeaveQuota = async (id, quota) => {
     try {
-      await axios.put(`/employees/${id}/leave-quota`, { leave_quota: quota });
+      const res = await fetch(`${API_BASE}/employees/${id}/leave-quota`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ leave_quota: quota })
+      });
+      if (!res.ok) throw new Error();
       alert('Leave quota updated');
     } catch (err) {
       console.error('Failed to update leave quota:', err);
@@ -149,10 +177,12 @@ const AdminDashboard = () => {
 
   const handleViewPhoto = async (id) => {
     try {
-      const res = await axios.get(`/attendance/photo/${id}`, {
-        responseType: 'blob'
+      const res = await fetch(`${API_BASE}/attendance/photo/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
       });
-      const url = URL.createObjectURL(res.data);
+      if (!res.ok) throw new Error();
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
       window.open(url, '_blank');
     } catch (err) {
       console.error('Error opening photo:', err);
