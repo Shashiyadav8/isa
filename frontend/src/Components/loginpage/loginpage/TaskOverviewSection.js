@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import axios from './axiosInstance';
 import './TaskOverviewSection.css';
 
 const TaskOverviewSection = () => {
@@ -11,23 +10,39 @@ const TaskOverviewSection = () => {
     description: ''
   });
 
+  const token = localStorage.getItem('token');
+
   const fetchOverview = useCallback(async () => {
     try {
-      const res = await axios.get('/tasks/overview');
-      setOverview(res.data);
+      const res = await fetch('/api/tasks/overview', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) throw new Error('Failed to fetch overview');
+      const data = await res.json();
+      setOverview(data);
     } catch (err) {
       console.error('Failed to fetch task overview:', err);
     }
-  }, []);
+  }, [token]);
 
   const fetchEmployees = useCallback(async () => {
     try {
-      const res = await axios.get('/employees');
-      setEmployees(res.data);
+      const res = await fetch('/api/employees', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) throw new Error('Failed to fetch employees');
+      const data = await res.json();
+      setEmployees(data);
     } catch (err) {
       console.error('Failed to fetch employees:', err);
     }
-  }, []);
+  }, [token]);
 
   useEffect(() => {
     fetchOverview();
@@ -36,19 +51,33 @@ const TaskOverviewSection = () => {
 
   const handleTaskAssign = async () => {
     const { employee_id, title, description } = newTask;
+
     if (!employee_id || !title || !description) {
       alert('❗ Please fill all fields to assign a task.');
       return;
     }
 
     try {
-      await axios.post('/tasks/assign', { employee_id, title, description });
+      const res = await fetch('/api/tasks/assign', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ employee_id, title, description }),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.message || 'Failed to assign task');
+      }
+
       alert('✅ Task assigned successfully');
       setNewTask({ employee_id: '', title: '', description: '' });
       fetchOverview();
     } catch (err) {
       console.error('Task assign error:', err);
-      alert(err.response?.data?.message || '❌ Failed to assign task');
+      alert(err.message || '❌ Failed to assign task');
     }
   };
 
