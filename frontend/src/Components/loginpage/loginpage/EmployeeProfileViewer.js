@@ -1,5 +1,5 @@
+// src/Components/EmployeeProfileViewer.js
 import React, { useEffect, useState } from 'react';
-import axios from './axiosInstance';
 import './EmployeeProfileViewer.css';
 
 const EmployeeProfileViewer = () => {
@@ -10,9 +10,11 @@ const EmployeeProfileViewer = () => {
   useEffect(() => {
     const fetchProfiles = async () => {
       try {
-        const res = await axios.get('/employees/profiles');
-        setProfiles(res.data);
-        setFilteredProfiles(res.data);
+        const res = await fetch('/api/employees/profiles'); // Adjust base path if needed
+        if (!res.ok) throw new Error('Failed to fetch');
+        const data = await res.json();
+        setProfiles(data);
+        setFilteredProfiles(data);
       } catch (err) {
         console.error('Failed to load employee profiles', err);
       }
