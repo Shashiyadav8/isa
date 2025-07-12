@@ -1,3 +1,4 @@
+// src/Components/admin/AdminSettingsSection.js
 import React, { useEffect, useState } from 'react';
 import './AdminSettingsSection.css';
 
@@ -8,12 +9,12 @@ const AdminSettingsSection = () => {
   const [endTime, setEndTime] = useState('');
 
   const token = localStorage.getItem('token');
-  const API_BASE = process.env.REACT_APP_API_BASE_URL;
+  const API_BASE = process.env.REACT_APP_API_URL;
 
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const res = await fetch(`${API_BASE}/admin/settings`, {
+        const res = await fetch(`${API_BASE}/api/admin/settings`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -57,7 +58,7 @@ const AdminSettingsSection = () => {
         .map(ip => ip.trim())
         .filter(Boolean);
 
-      const res = await fetch(`${API_BASE}/admin/settings`, {
+      const res = await fetch(`${API_BASE}/api/admin/settings`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
